@@ -201,6 +201,9 @@
 
         </div>
     </div>
+    <footer>
+        <a href = "https://oddknight.space">oddknight.space</a>
+    </footer>
 </main>
 
 <style>
@@ -215,13 +218,34 @@
         line-height: 1.6;
         color: var(--fg);
         background-color: var(--bg);
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
     }
     
+    main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    footer {
+        text-align: center;
+        padding: 1rem;
+        margin-top: auto;
+        a {
+            color: var(--link);
+            text-decoration: none;
+        }
+    }
+
     .container {
         max-width: 800px;
         margin: 0 auto;
         padding: 2rem;
-        min-height: 100vh;
+        flex: 1;
     }
     
     h1 {

@@ -4,25 +4,27 @@
     let altSequence = $state('');
     let currentCyclingChar = $state('');
     let textareaRef;
-    
-    
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            const savedText = localStorage.getItem('frenchTypingText');
-            if (savedText !== null) {
-                text = savedText;
-            }
-        }
-    });
-    
-    
-    $effect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('frenchTypingText', text);
-        }
-    });
-    
-    
+
+$effect(() => {
+  if (typeof window !== 'undefined') {
+    const savedText = localStorage.getItem('frenchTypingText');
+    if (savedText !== null) {
+      text = savedText;
+    }
+  }
+});
+
+let saveTimeout;
+$effect(() => {
+  if (typeof window === 'undefined') return;
+  const current = text;
+  const id = setTimeout(() => {
+    try { localStorage.setItem('frenchTypingText', current); }
+    catch (e) { console.warn('localStorage save failed', e); }
+  }, 1000);
+  return () => clearTimeout(id);
+});
+
     const frenchChars = {
         'e': ['é', 'è', 'ê', 'ë'],
         'a': ['à', 'â', 'ä'],
@@ -58,51 +60,37 @@
                 currentCyclingChar = '';
             }
             
-            
             event.preventDefault();
-            
             const key = event.key.toLowerCase();
             
-            
             if (frenchChars[key]) {
-                
                 if (currentCyclingChar !== '' && currentCyclingChar !== key) {
                     altSequence = '';
                     currentCyclingChar = key;
                 } else if (currentCyclingChar === '') {
                     currentCyclingChar = key;
                 }
-                
-                
                 altSequence += key;
-                
                 
                 const isCapital = event.shiftKey;
                 const charSet = isCapital ? frenchCharsCapital[key] : frenchChars[key];
                 const charIndex = (altSequence.length - 1) % charSet.length;
                 const frenchChar = charSet[charIndex];
                 
-                
                 if (altSequence.length === 1) {
                     text += frenchChar;
                 } else {
-                    
                     const lastChar = text.slice(-1);
                     const possibleChars = charSet;
                     
                     if (possibleChars.includes(lastChar)) {
-                        
                         text = text.slice(0, -1) + frenchChar;
                     } else {
-                        
                         text += frenchChar;
                     }
                 }
-                
-                
                 adjustTextareaSize();
             } else if (event.key === 'Escape') {
-                
                 altPressed = false;
                 altSequence = '';
                 currentCyclingChar = '';
@@ -111,7 +99,6 @@
     }
     
     function handleKeyUp(event) {
-        
         if (event.key === 'Alt') {
             altPressed = false;
             altSequence = '';
@@ -135,7 +122,6 @@
     }
     
     $effect(() => {
-        
         adjustTextareaSize();
     });
     
@@ -157,9 +143,7 @@
 <main>
     <div class="container">
         <h1>French typing tool</h1>
-        
         <div class="input-section">
-            
             <textarea
                 id="text-input"
                 bind:this={textareaRef}
@@ -170,7 +154,6 @@
                 placeholder="Start typing..."
                 rows="1"
             ></textarea>
-            
             <div class="controls">
                 {#if altPressed}
                     <div class="alt-indicator">Alt Mode Active</div>
@@ -181,7 +164,6 @@
         <div class="instructions">
             <h2>How to use:</h2>
             <p>Hold <kbd>Alt</kbd> and press a letter to type French special characters. Add <kbd>Shift</kbd> for capital letters:</p>
-            
             <div class="char-grid">
                 {#each Object.entries(frenchChars) as [baseChar, specialChars]}
                     <div class="char-group">
@@ -197,8 +179,6 @@
                     </div>
                 {/each}
             </div>
-            
-
         </div>
     </div>
     <footer>
@@ -263,13 +243,6 @@
     
     .input-section {
         margin-bottom: 3rem;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: var(--fg);
     }
     
     textarea {

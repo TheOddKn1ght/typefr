@@ -10,6 +10,7 @@ $effect(() => {
     const savedText = localStorage.getItem('frenchTypingText');
     if (savedText !== null) {
       text = savedText;
+      setTimeout(() => adjustTextareaSize(), 0);
     }
   }
 });

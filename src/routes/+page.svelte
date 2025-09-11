@@ -267,7 +267,7 @@
         top: 1rem;
         left: 1rem;
         padding: 0.5rem 1rem;
-        background-color: var(--yellow);
+        background-color: var(--code_bg);
         color: var(--fg);
         border-radius: 6px;
         font-weight: 600;

@@ -5,26 +5,26 @@
     let currentCyclingChar = $state('');
     let textareaRef;
 
-$effect(() => {
-  if (typeof window !== 'undefined') {
-    const savedText = localStorage.getItem('frenchTypingText');
-    if (savedText !== null) {
-      text = savedText;
-      setTimeout(() => adjustTextareaSize(), 0);
-    }
-  }
-});
+    $effect(() => {
+      if (typeof window !== 'undefined') {
+        const savedText = localStorage.getItem('frenchTypingText');
+        if (savedText !== null) {
+          text = savedText;
+          setTimeout(() => adjustTextareaSize(), 0);
+        }
+      }
+    });
 
-let saveTimeout;
-$effect(() => {
-  if (typeof window === 'undefined') return;
-  const current = text;
-  const id = setTimeout(() => {
-    try { localStorage.setItem('frenchTypingText', current); }
-    catch (e) { console.warn('localStorage save failed', e); }
-  }, 1000);
-  return () => clearTimeout(id);
-});
+    let saveTimeout;
+    $effect(() => {
+      if (typeof window === 'undefined') return;
+      const current = text;
+      const id = setTimeout(() => {
+        try { localStorage.setItem('frenchTypingText', current); }
+        catch (e) { console.warn('localStorage save failed', e); }
+      }, 1000);
+      return () => clearTimeout(id);
+    });
 
     const frenchChars = {
         'e': ['é', 'è', 'ê', 'ë'],
@@ -37,7 +37,6 @@ $effect(() => {
         'n': ['ñ'],
         's': ['ß']
     };
-    
     
     const frenchCharsCapital = {
         'e': ['É', 'È', 'Ê', 'Ë'],
@@ -52,9 +51,7 @@ $effect(() => {
     };
     
     function handleKeyDown(event) {
-        
         if (event.altKey) {
-            
             if (!altPressed) {
                 altPressed = true;
                 altSequence = '';
@@ -111,7 +108,6 @@ $effect(() => {
         if (!altPressed) {
             text = event.target.value;
         }
-        
         adjustTextareaSize();
     }
     
@@ -126,14 +122,11 @@ $effect(() => {
         adjustTextareaSize();
     });
     
-    
     $effect(() => {
         if (textareaRef) {
             adjustTextareaSize();
         }
     });
-    
-
 </script>
 
 <svelte:head>
@@ -142,6 +135,10 @@ $effect(() => {
 </svelte:head>
 
 <main>
+    {#if altPressed}
+        <div class="alt-indicator">Alt Mode Active</div>
+    {/if}
+
     <div class="container">
         <h1>French typing tool</h1>
         <div class="input-section">
@@ -155,11 +152,6 @@ $effect(() => {
                 placeholder="Start typing..."
                 rows="1"
             ></textarea>
-            <div class="controls">
-                {#if altPressed}
-                    <div class="alt-indicator">Alt Mode Active</div>
-                {/if}
-            </div>
         </div>
         
         <div class="instructions">
@@ -183,7 +175,7 @@ $effect(() => {
         </div>
     </div>
     <footer>
-        <a href = "https://oddknight.space">oddknight.space</a>
+        <a href="https://oddknight.space">oddknight.space</a>
     </footer>
 </main>
 
@@ -269,23 +261,19 @@ $effect(() => {
     textarea::placeholder {
         color: var(--gray);
     }
-    
-    .controls {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    
 
-    
     .alt-indicator {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
         padding: 0.5rem 1rem;
         background-color: var(--yellow);
         color: var(--fg);
         border-radius: 6px;
         font-weight: 600;
+        z-index: 9999;
         animation: pulse 1s infinite;
+        transition: opacity 0.3s ease;
     }
     
     @keyframes pulse {
@@ -366,11 +354,6 @@ $effect(() => {
         
         .char-grid {
             grid-template-columns: 1fr;
-        }
-        
-        .controls {
-            flex-direction: column;
-            align-items: stretch;
         }
     }
 </style>

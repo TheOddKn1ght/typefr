@@ -5,9 +5,15 @@
     let currentCyclingChar = $state('');
     let textareaRef;
     let copySuccess = $state(false);
+    let isMac = $state(false);
 
     $effect(() => {
       if (typeof window !== 'undefined') {
+        // Detect macOS
+        isMac = /Mac|iPhone|iPod|iPad/i.test(navigator.platform) || 
+                /Mac|Intel|PPC|68K/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
         const savedText = localStorage.getItem('frenchTypingText');
         if (savedText !== null) {
           text = savedText;
@@ -52,7 +58,7 @@
     };
     
     function handleKeyDown(event) {
-        if (event.altKey) {
+        if (event.altKey && !event.metaKey && !event.ctrlKey) {
             if (!altPressed) {
                 altPressed = true;
                 altSequence = '';
@@ -60,6 +66,8 @@
             }
             
             event.preventDefault();
+            event.stopPropagation();
+            
             const key = event.key.toLowerCase();
             
             if (frenchChars[key]) {
@@ -93,12 +101,15 @@
                 altPressed = false;
                 altSequence = '';
                 currentCyclingChar = '';
+            } else if (isMac) {
+                event.preventDefault();
+                event.stopPropagation();
             }
         }
     }
     
     function handleKeyUp(event) {
-        if (event.key === 'Alt') {
+        if (!event.altKey || event.key === 'Alt' || event.key === 'AltLeft' || event.key === 'AltRight' || event.key === 'AltGraph') {
             altPressed = false;
             altSequence = '';
             currentCyclingChar = '';
@@ -108,6 +119,17 @@
     function handleInput(event) {
         if (!altPressed) {
             text = event.target.value;
+        } else {
+            if (textareaRef && textareaRef.value !== text) {
+                const cursorPos = textareaRef.selectionStart;
+                textareaRef.value = text;
+                setTimeout(() => {
+                    if (textareaRef) {
+                        const newPos = Math.min(cursorPos, text.length);
+                        textareaRef.setSelectionRange(newPos, newPos);
+                    }
+                }, 0);
+            }
         }
         adjustTextareaSize();
     }
@@ -182,11 +204,11 @@
         
         <div class="instructions">
             <h2>How to use:</h2>
-            <p>Hold <kbd>Alt</kbd> and press a letter to type French special characters. Add <kbd>Shift</kbd> for capital letters:</p>
+            <p>Hold <kbd>{isMac ? 'Option' : 'Alt'}</kbd> and press a letter to type French special characters. Add <kbd>Shift</kbd> for capital letters:</p>
             <div class="char-grid">
                 {#each Object.entries(frenchChars) as [baseChar, specialChars]}
                     <div class="char-group">
-                        <span class="base-char">Alt + {baseChar}</span>
+                        <span class="base-char">{isMac ? 'Option' : 'Alt'} + {baseChar}</span>
                         <div class="special-chars">
                             {#each specialChars as char, index}
                                 <span class="special-char">{char}</span>

@@ -4,6 +4,7 @@
     let altSequence = $state('');
     let currentCyclingChar = $state('');
     let textareaRef;
+    let copySuccess = $state(false);
 
     $effect(() => {
       if (typeof window !== 'undefined') {
@@ -118,6 +119,20 @@
         }
     }
     
+    async function copyToClipboard() {
+        if (!text.trim()) return;
+        
+        try {
+            await navigator.clipboard.writeText(text);
+            copySuccess = true;
+            setTimeout(() => {
+                copySuccess = false;
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy text:', err);
+        }
+    }
+    
     $effect(() => {
         adjustTextareaSize();
     });
@@ -152,6 +167,17 @@
                 placeholder="Start typing..."
                 rows="1"
             ></textarea>
+            <div class="button-container">
+                {#if text.trim()}
+                    <button 
+                        class="copy-button"
+                        onclick={copyToClipboard}
+                        title="Copy to clipboard"
+                    >
+                        {copySuccess ? '✓ Copied!' : 'Copy'}
+                    </button>
+                {/if}
+            </div>
         </div>
         
         <div class="instructions">
@@ -236,6 +262,9 @@
     
     .input-section {
         margin-bottom: 3rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     textarea {
@@ -250,6 +279,45 @@
         color: var(--fg);
         resize: vertical;
         transition: border-color 0.2s ease;
+        margin-bottom: 0.5rem;
+    }
+    
+    .button-container {
+        min-height: 42px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .copy-button {
+        padding: 0.5rem 1rem;
+        background-color: var(--blue);
+        color: var(--bg);
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        transform: scale(0.8) translateY(-10px);
+        animation: buttonAppear 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    
+    @keyframes buttonAppear {
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+    
+    .copy-button:hover {
+        background-color: var(--lightblue);
+        transform: scale(1) translateY(-1px);
+    }
+    
+    .copy-button:active {
+        transform: scale(0.98) translateY(0);
     }
     
     textarea:focus {

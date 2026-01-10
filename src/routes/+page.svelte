@@ -271,7 +271,7 @@
         width: 100%;
         min-height: 60px;
         padding: 1rem;
-        border: 2px solid var(--code_bg);
+        border: 2px solid var(--border);
         border-radius: 8px;
         font-size: 1.1rem;
         font-family: inherit;
@@ -323,7 +323,7 @@
     textarea:focus {
         outline: none;
         border-color: var(--blue);
-        box-shadow: 0 0 0 3px rgba(129, 161, 193, 0.1);
+        box-shadow: 0 0 0 3px var(--blue-shadow);
     }
     
     textarea::placeholder {
@@ -367,7 +367,7 @@
         background-color: var(--bg);
         padding: 1rem;
         border-radius: 6px;
-        border: 1px solid var(--code_bg);
+        border: 1px solid var(--border);
     }
     
     .base-char {

@@ -1,7 +1,16 @@
 <script>
+    const isMac = typeof navigator !== 'undefined' && (
+        navigator.userAgentData?.platform === 'macOS' ||
+        /Mac|iPhone|iPad|iPod/.test(navigator.platform || '') ||
+        /Mac OS X/.test(navigator.userAgent || '')
+    );
+    const modLabel   = isMac ? 'Cmd'     : 'Alt';
+    const modKeyName = isMac ? 'Meta'    : 'Alt';
+    const modKeyProp = isMac ? 'metaKey' : 'altKey';
+
     let text = $state('');
-    let altPressed = $state(false);
-    let altSequence = $state('');
+    let modPressed = $state(false);
+    let modSequence = $state('');
     let currentCyclingChar = $state('');
     let textareaRef;
     let copySuccess = $state(false);
@@ -52,36 +61,37 @@
     };
     
     function handleKeyDown(event) {
-        if (event.altKey) {
-            if (!altPressed) {
-                altPressed = true;
-                altSequence = '';
+        // On macOS, Cmd+N cannot be intercepted — pressing it always opens a new window, so ñ is unreachable via shortcut there.
+        if (event[modKeyProp]) {
+            if (!modPressed) {
+                modPressed = true;
+                modSequence = '';
                 currentCyclingChar = '';
             }
-            
+
             event.preventDefault();
             const key = event.key.toLowerCase();
-            
+
             if (frenchChars[key]) {
                 if (currentCyclingChar !== '' && currentCyclingChar !== key) {
-                    altSequence = '';
+                    modSequence = '';
                     currentCyclingChar = key;
                 } else if (currentCyclingChar === '') {
                     currentCyclingChar = key;
                 }
-                altSequence += key;
-                
+                modSequence += key;
+
                 const isCapital = event.shiftKey;
                 const charSet = isCapital ? frenchCharsCapital[key] : frenchChars[key];
-                const charIndex = (altSequence.length - 1) % charSet.length;
+                const charIndex = (modSequence.length - 1) % charSet.length;
                 const frenchChar = charSet[charIndex];
-                
-                if (altSequence.length === 1) {
+
+                if (modSequence.length === 1) {
                     text += frenchChar;
                 } else {
                     const lastChar = text.slice(-1);
                     const possibleChars = charSet;
-                    
+
                     if (possibleChars.includes(lastChar)) {
                         text = text.slice(0, -1) + frenchChar;
                     } else {
@@ -90,23 +100,23 @@
                 }
                 adjustTextareaSize();
             } else if (event.key === 'Escape') {
-                altPressed = false;
-                altSequence = '';
+                modPressed = false;
+                modSequence = '';
                 currentCyclingChar = '';
             }
         }
     }
-    
+
     function handleKeyUp(event) {
-        if (event.key === 'Alt') {
-            altPressed = false;
-            altSequence = '';
+        if (event.key === modKeyName) {
+            modPressed = false;
+            modSequence = '';
             currentCyclingChar = '';
         }
     }
-    
+
     function handleInput(event) {
-        if (!altPressed) {
+        if (!modPressed) {
             text = event.target.value;
         }
         adjustTextareaSize();
@@ -150,8 +160,8 @@
 </svelte:head>
 
 <main>
-    {#if altPressed}
-        <div class="alt-indicator">Alt Mode Active</div>
+    {#if modPressed}
+        <div class="mod-indicator">{modLabel} Mode Active</div>
     {/if}
 
     <div class="container">
@@ -182,11 +192,11 @@
         
         <div class="instructions">
             <h2>How to use:</h2>
-            <p>Hold <kbd>Alt</kbd> and press a letter to type French special characters. Add <kbd>Shift</kbd> for capital letters:</p>
+            <p>Hold <kbd>{modLabel}</kbd> and press a letter to type French special characters. Add <kbd>Shift</kbd> for capital letters:</p>
             <div class="char-grid">
                 {#each Object.entries(frenchChars) as [baseChar, specialChars]}
                     <div class="char-group">
-                        <span class="base-char">Alt + {baseChar}</span>
+                        <span class="base-char">{modLabel} + {baseChar}</span>
                         <div class="special-chars">
                             {#each specialChars as char, index}
                                 <span class="special-char">{char}</span>
@@ -330,7 +340,7 @@
         color: var(--gray);
     }
 
-    .alt-indicator {
+    .mod-indicator {
         position: fixed;
         top: 1rem;
         left: 1rem;

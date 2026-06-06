@@ -11,7 +11,13 @@ const config = {
 			fallback: undefined,
 			precompress: false,
 			strict: true
-		})
+		}),
+		prerender: {
+			handleHttpError: ({ path, referrer, message }) => {
+				if (/^\/icon-\d+(-maskable)?\.png$/.test(path)) return;
+				throw new Error(`${message} (${path} from ${referrer})`);
+			}
+		}
 	}
 };
 
